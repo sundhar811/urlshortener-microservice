@@ -4,6 +4,7 @@ var express = require('express');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
 const autoIncrement = require('mongoose-auto-increment');
+const dns = require('dns');
 
 var cors = require('cors');
 
@@ -46,35 +47,55 @@ app.get("/api/hello", function (req, res) {
 // url shortner microservice
 app.post('/api/shorturl/new', (req, res) => {
   let { url } = req.body;
+  url = url.split('//')[1];
   url = url[url.length-1] === '/' ? url.slice(0, url.length-1) : url;
-  UrlModel.findOne({ url: url }, (err, data) => {
-    if(err) {
-      console.log(err)
+  dns.lookup(url, (err, address, family) => {
+    if (err) {
+      res.send({error: 'invalid URL'})
     } else {
-      if (data) {
-        let { _id, url } = data;
-        res.send({original_url: url, short_url: _id });
-      } else {
-        let urlObj = new UrlModel({
-          url: url
-        });
-
-        urlObj.save().then(() => {
-          UrlModel.findOne({ url: url }, (err, data) => {
-          if(err) {
-            console.log(err)
+      UrlModel.findOne({ url: url }, (err, data) => {
+        if(err) {
+          console.log(err)
+        } else {
+          if (data) {
+            let { _id, url } = data;
+            res.send({original_url: url, short_url: _id });
           } else {
-            if (data) {
-              let { _id, url } = data;
-              res.send({original_url: url, short_url: _id });
-            }
+            let urlObj = new UrlModel({
+              url: url
+            });
+
+            urlObj.save().then(() => {
+              UrlModel.findOne({ url: url }, (err, data) => {
+              if(err) {
+                console.log(err)
+              } else {
+                if (data) {
+                  let { _id, url } = data;
+                  res.send({original_url: url, short_url: _id });
+                }
+              }
+            });
+          });
           }
-        });
-      });
-      }
+        }
+      });  
     }
   });  
 });
+
+// url redirection
+app.get('/api/shorturl/:id', (req, res) => {
+  let { id } = req.params;
+  UrlModel.findOne({ _id: id }, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      let { url } = data;
+      res.redirect('https://'.concat(url));
+    }
+  })
+})
 
 
 app.listen(port, function () {

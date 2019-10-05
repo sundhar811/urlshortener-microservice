@@ -17,11 +17,11 @@ POST https://sundhar811-urlshortener-microservice.glitch.me/api/shorturl/new - b
 
 #### Usage:
 
-https://sundhar811-urlshortener-microservice.glitch.me/api/shorturl/3
+https://sundhar811-urlshortener-microservice.glitch.me/api/shorturl/0
 
 #### Will redirect to:
 
-https://www.freecodecamp.org/forum/
+https://www.freecodecamp.org/
 
 ## Challenge Link:
 https://learn.freecodecamp.org/apis-and-microservices/apis-and-microservices-projects/url-shortener-microservice
